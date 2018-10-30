@@ -4,7 +4,7 @@
 #
 set -ex
 
-DASH_IMAGE=${DASH_IMAGE:-dashpay/dashd}
+HATCH_IMAGE=${HATCH_IMAGE:-hatchpay/hatchd}
 
 distro=$1
 shift
@@ -35,23 +35,23 @@ if [ "$distro" = "trusty" -o "$distro" = "ubuntu:14.04" ]; then
 fi
 
 # Always clean-up, but fail successfully
-docker kill dashd-node 2>/dev/null || true
-docker rm dashd-node 2>/dev/null || true
-stop docker-dashd 2>/dev/null || true
+docker kill hatchd-node 2>/dev/null || true
+docker rm hatchd-node 2>/dev/null || true
+stop docker-hatchd 2>/dev/null || true
 
 # Always pull remote images to avoid caching issues
-if [ -z "${DASH_IMAGE##*/*}" ]; then
-    docker pull $DASH_IMAGE
+if [ -z "${HATCH_IMAGE##*/*}" ]; then
+    docker pull $HATCH_IMAGE
 fi
 
 # Initialize the data container
-docker volume create --name=dashd-data
-docker run -v dashd-data:/dash --rm $DASH_IMAGE dash_init
+docker volume create --name=hatchd-data
+docker run -v hatchd-data:/hatch --rm $HATCH_IMAGE hatch_init
 
-# Start dashd via upstart and docker
-curl https://raw.githubusercontent.com/dashpay/docker-dashd/master/upstart.init > /etc/init/docker-dashd.conf
-start docker-dashd
+# Start hatchd via upstart and docker
+curl https://raw.githubusercontent.com/hatchpay/docker-hatchd/master/upstart.init > /etc/init/docker-hatchd.conf
+start docker-hatchd
 
 set +ex
-echo "Resulting dash.conf:"
-docker run -v dashd-data:/dash --rm $DASH_IMAGE cat /dash/.dashcore/dash.conf
+echo "Resulting hatch.conf:"
+docker run -v hatchd-data:/hatch --rm $HATCH_IMAGE cat /hatch/.hatchcore/hatch.conf
